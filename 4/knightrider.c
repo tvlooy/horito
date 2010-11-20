@@ -9,8 +9,8 @@
  * This program simulates a knight rider using PWM on 8 LED's
  */
  
- // Best values are 50, 100, 200
- #define SPEED 100
+// Best values are 50, 100, 200
+#define SPEED 100
  
 void main(void)
 {
