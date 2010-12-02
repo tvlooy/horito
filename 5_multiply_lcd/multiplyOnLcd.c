@@ -53,31 +53,7 @@ int main(void)
         // Only write to the LCD when the values have changed
         if (old_number != number) {
             Glcd_Fill(0x00); // Clear GLCD
-            strcpy(text, "IN = 000, OUT = 000");
-            
-            // I couldn't use sprintf() to assemble the text and had to do
-            // it this way. Using spintf() made the binary larger and the MikroE
-            // compiler gave a "demo limit" error. WTF MikroE! You suck! I buy
-            // a development board of 200 Euro and can't develop for it??
-            if (in >= 100) {
-                text[5] = ((in / 100) + 48);
-                in -= (in / 100 * 100);
-            }
-            if (in >= 10) {
-                text[6] = ((in / 10) + 48);
-                in -= (in / 10 * 10);
-            }
-            text[7] = in + 48;
-            if (out >= 100) {
-                text[16] = ((out / 100) + 48);
-                out -= (out / 100 * 100);
-            }
-            if (out >= 10) {
-                text[17] = ((out / 10) + 48);
-                out -= (out / 10 * 10);
-            }
-            text[18] = out + 48;
-            
+            sprintf(text, "IN = %03d, OUT = %03d", in, out);
             Glcd_Write_Text(text, 0, 1, 1);
         }
     }
