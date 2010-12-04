@@ -21,9 +21,9 @@ int i;
  */
 static void slider_changed(GtkAdjustment *adj)
 {
-    for (i = 0; i < sizeof(sliderAddresses)/sizeof(int); i++) {
+    for (i = 0; i < sizeof(sliderAddresses) / sizeof(int); i++) {
         if (sliderAddresses[i] == (int) adj) {
-            ledValues[i] = (double) adj->value/100;
+            ledValues[i] = (double) adj->value / 100;
             gtk_widget_queue_draw(window);
             return;
         }
