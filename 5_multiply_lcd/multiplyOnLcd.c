@@ -11,7 +11,6 @@
  * This value is then displayed on the LCD and on LED array RF0-RF7.
  */
 
-// -- global variables ---------------------------------------------------------
 char GLCD_DataPort at PORTC;
 char GLCD_DataPort_Direction at DDRC;
 
@@ -29,29 +28,41 @@ sbit GLCD_RW_Direction  at DDA5_bit;
 sbit GLCD_EN_Direction  at DDA6_bit;
 sbit GLCD_RST_Direction at DDA7_bit;
 
-int main(void)
+void setup(void);
+
+/**
+ * Hardware setup
+ */
+void setup(void)
 {
-    int old_number = 0;
-    char text[255] = "";
-    int in = 0;
-    int out = 0;
-    unsigned char number = 0;
-    
     DDRE = 0b00000000; // PORTE is input
     DDRF = 0b11111111; // PORTF is output
     Glcd_Init();       // Initialize GLCD
     Glcd_Fill(0x00);   // Clear GLCD
+}
+
+/**
+ * Program entry point
+ */
+int main(void)
+{
+    char text[255] = "";
+    unsigned int in = 0;
+    unsigned int in_old = 0;
+    int out = 0;
+
+    setup();
 
     while (1) {
-        old_number = number;
-        number = PINE;
+        in = PINE;
 
-        in = number;
-        out = number * 2;
-        PORTF = out;
-        
         // Only write to the LCD when the values have changed
-        if (old_number != number) {
+        if (in != in_old) {
+            out = in * 2;
+            in_old = in;
+
+            // Display result on LEDs and LCD
+            PORTF = out;
             Glcd_Fill(0x00); // Clear GLCD
             sprintf(text, "IN = %03d, OUT = %03d", in, out);
             Glcd_Write_Text(text, 0, 1, 1);
