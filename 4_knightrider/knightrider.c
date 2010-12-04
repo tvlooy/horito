@@ -10,7 +10,7 @@
  * Use the TCCR0 prescaler and OCR0 to modify animation speed.
  */
 
-enum BOOLEAN { TRUE, FALSE } _doMove = FALSE;
+volatile enum BOOLEAN { TRUE, FALSE } _doMove = FALSE;
 
 void setup(void);
 
