@@ -147,8 +147,9 @@ void main(void)
                 _cheater = TRUE;
             } else {
                 PORTD = 0b00001111;
-                sprintf(text, "Your score: %d       ", _milliseconds);
-                Glcd_Write_Text("***** FINISHED ******",  0, 0, 0);
+                _milliseconds *= 1.6; // approach milliseconds
+                sprintf(text, "Your score: %d ms    ", _milliseconds);
+                Glcd_Write_Text("***** FINISHED ****** ",  0, 0, 0);
                 Glcd_Write_Text(text,  0, 1, 0);
                 Glcd_Write_Text("       _______    |  ",  0, 3, 1);
                 Glcd_Write_Text("      (       )  -.- ",  0, 4, 1);
