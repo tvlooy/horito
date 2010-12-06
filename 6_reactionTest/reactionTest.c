@@ -7,7 +7,6 @@
  * License: http://ctors.net/isc_license.txt
  *
  * On the board, set dip switches of PORTA, PORTB, PORTC and PORTE to OFF.
- * Turn dip switch RTC-INT, SDA, SCL to ON.
  *
  * This program is a reaction tester. When the LEDs of PORTB are turned on,
  * the user must press button RD0 as quick as possible. The reaction speed is
