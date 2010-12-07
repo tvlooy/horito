@@ -42,7 +42,8 @@ int main(void)
     rgb = getc(bitmap);
     while (rgb != EOF, charRow < 8) {
         for (charCol = 7; charCol >= 0; charCol--) {
-            dump[charRow][pixCol + (7 - charCol)] += (((rgb & (int) pow(2, charCol)) == (int) pow(2, charCol)) ? pixRow : 0);
+            dump[charRow][pixCol + 7 - charCol] +=
+                (rgb & (int) pow(2, charCol)) == pow(2, charCol) ? pixRow : 0;
         }
 
         // change counters to position to the pixels in result set
