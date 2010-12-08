@@ -36,7 +36,6 @@ void setup(void);
  */
 void setup(void)
 {
-    TIMSK |= 0b00000010; // Interrupt on compare match
     Glcd_Init();         // Initialize GLCD
     Glcd_Fill(0x00);     // Clear GLCD
 }

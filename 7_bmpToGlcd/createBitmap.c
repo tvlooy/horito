@@ -35,7 +35,7 @@ int main(void)
     // initialize counters
     charRow = 0;   // step +1 = character row, there are 8 rows
     pixRow  = 128; // step /2 = pixel row in character, there are 8 pixels
-    pixCol  = 0;   // step +8 = pixel column, there are 128 columns per pixRow
+    pixCol  = 0;   // step +8 = pixel column, there are 128 columns per charRow
     charCol = 7;   // step -1 = character column, there are 8 columns per pixCol
 
     // read the entire bitmap, every read is 8 bits
