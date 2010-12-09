@@ -76,9 +76,11 @@ void main(void)
                 newChar = ' ';
             }
             // CR = go to the next line
-            else if (newChar == 13 && line < 8) {
-                line++;
-                sprintf(message, "");
+            else if (newChar == 13) {
+                if (line < 7) {
+                    line++;
+                    sprintf(message, "");
+                }
             }
             // ESC = clear screen and restart
             else if (newChar == 27) {
