@@ -70,9 +70,9 @@ void main(void)
         if (newChar != 0) {
             // DEL = go back one character
             if (newChar == 127) {
-                message[strlen(message)-1] = ' ';
+                message[strlen(message) - 1] = ' ';
                 Glcd_Write_Text(message, 0, line, 1);
-                message[strlen(message)-1] = '\0';
+                message[strlen(message) - 1] = '\0';
                 newChar = ' ';
             }
             // CR = go to the next line
