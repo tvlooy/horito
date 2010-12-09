@@ -14,7 +14,7 @@
  *   - ESC to restart
  */
 
-volatile int newChar = 0;
+volatile int _newChar = 0;
 
 char GLCD_DataPort at PORTC;
 char GLCD_DataPort_Direction at DDRC;
@@ -53,7 +53,7 @@ void setup(void)
  */
 void Received() iv IVT_ADDR_USART0__RX
 {
-    newChar = UDR0;
+    _newChar = UDR0;
 }
 
 /**
@@ -67,32 +67,32 @@ void main(void)
     setup();
 
     while(1) {
-        if (newChar != 0) {
+        if (_newChar != 0) {
             // DEL = go back one character
-            if (newChar == 127) {
+            if (_newChar == 127) {
                 message[strlen(message) - 1] = ' ';
                 Glcd_Write_Text(message, 0, line, 1);
                 message[strlen(message) - 1] = '\0';
-                newChar = ' ';
+                _newChar = ' ';
             }
             // CR = go to the next line
-            else if (newChar == 13) {
+            else if (_newChar == 13) {
                 if (line < 7) {
                     line++;
                     sprintf(message, "");
                 }
             }
             // ESC = clear screen and restart
-            else if (newChar == 27) {
+            else if (_newChar == 27) {
                 line = 0;
                 sprintf(message, "");
                 Glcd_Fill(0x00);
             }
             // Display character
             else {
-                sprintf(message, "%s%c", message, newChar);
+                sprintf(message, "%s%c", message, _newChar);
             }
-            newChar = 0;
+            _newChar = 0;
             Glcd_Write_Text(message, 0, line, 1);
         }
     }
