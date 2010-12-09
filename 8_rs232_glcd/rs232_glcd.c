@@ -51,7 +51,7 @@ void setup(void)
 /**
  * RS232 receive data interrupt
  */
-void ButtonPressed() iv IVT_ADDR_USART0__RX
+void Received() iv IVT_ADDR_USART0__RX
 {
     newChar = UDR0;
 }
