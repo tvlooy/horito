@@ -38,18 +38,27 @@ int main(void)
     tcsetattr(fd, TCSANOW, &options);    /* set new options
                                           * TCSANOW = immediately          */
 
-    // write the data to the remote system
-    // usleep between characters because the test program
-    // doesn't have buffering yet
-    char value[] = "Tom Van Looy\rctors.net\r\r<tom@ctors.net>";
-    char send[2] = "";
-    int i;
-    sprintf(send, "%c", 27); // esc (clears the screen)
-    for (i = 0; i < strlen(value)+1; i++) {
-        write(fd, send, 1);
-        sprintf(send, "%c", value[i]);
-        usleep(40000);
-    }
+    // ESC = value for clear screen and restart
+    char clear[2] = "";
+    sprintf(clear, "%c", 27); // ESC
+
+    // send new data
+    char value1[] = "*********************\r"
+                    "***  ___________  ***\r"
+                    "** _|           |_ **\r"
+                    "* |     ROCK      | *\r"
+                    "* |_     and     _| *\r"
+                    "**  |    ROLL   |  **\r"
+                    "*** |___________| ***\r"
+                    "*********************\r";
+    write(fd, clear, 1);
+    write(fd, value1, strlen(value1));
+
+    sleep(10);
+
+    char value2[] = "Tom Van Looy\rctors.net\r\r<tom@ctors.net>";
+    write(fd, clear, 1);
+    write(fd, value2, strlen(value2));
 
     close(fd);
     return 0;
