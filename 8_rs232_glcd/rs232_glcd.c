@@ -9,6 +9,7 @@
  * Set DIP switches RX232A and TX232A to ON.
  * Set DIP switches PORTA, PORTB, PORTC, PORTD and PORTE to OFF.
  * This program displays the text you send to it over RS232.
+ *   - DEL to go back
  *   - CR for a new line
  *   - ESC to restart
  */
@@ -90,8 +91,15 @@ void main(void)
                 bufferPos = 0;
             }
 
+            // DEL = go back one character
+            if (newChar == 127) {
+                message[strlen(message) - 1] = ' ';
+                Glcd_Write_Text(message, 0, line, 1);
+                message[strlen(message) - 1] = '\0';
+                newChar = ' ';
+            }
             // CR = go to the next line
-            if (newChar == 13) {
+            else if (newChar == 13) {
                 if (line < 7) {
                   line++;
                   sprintf(message, "");
