@@ -7,6 +7,8 @@
  * License: http://ctors.net/isc_license.txt
  */
 
+#define STEP 10 // value to go up/down
+
 void setup(void);
 
 /**
@@ -23,11 +25,11 @@ void setup(void)
  */
 void main(void)
 {
-    unsigned char i = 0;      // counter
+    unsigned char i = 0; // software PWM counter
     unsigned char pwm[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
     unsigned char buttonUp = 0;
     unsigned char buttonDown = 0;
-    unsigned char lock = 0;
+    unsigned long int lock = 0; // anti-dender lock
     
     setup();
 
@@ -96,30 +98,26 @@ void main(void)
 // -- up -----------------------------------------------------------------------
         if (buttonUp < 8 && lock == 0) {
             lock = 1;
-            if (pwm[buttonUp] < 255) {
-                pwm[buttonUp] += 1;
+            if (pwm[buttonUp] < (0xFF - STEP)) {
+                pwm[buttonUp] += STEP;
             }
         }
-        if (lock == 1) {
-            Delay_ms(100);
-        }
-//        if (buttonUp == 8) {
-//            lock = 0;
-//        }
 
 // -- down ---------------------------------------------------------------------
         if (buttonDown < 8 && lock == 0) {
             lock = 1;
-            if (pwm[buttonUp] > 0) {
-                pwm[buttonDown] -= 1;
+            if (pwm[buttonDown] > STEP) {
+                pwm[buttonDown] -= STEP;
             }
         }
-        if (lock == 1) {
-            Delay_ms(100);
+
+// -- locking ------------------------------------------------------------------
+        if (lock > 0 && lock < 500) {
+            lock++;
         }
-//        if (buttonDown == 8) {
-//            lock = 0;
-//        }
+        if (lock == 500 && buttonUp == 8 && buttonDown == 8) {
+            lock = 0;
+        }
 
 // -- LEDs ---------------------------------------------------------------------
 
@@ -181,7 +179,6 @@ void main(void)
         }
 
         i++; // turns over automatically, 255 + 1 = 0
-        
     }
 }
 
