@@ -5,9 +5,14 @@
  *
  * Author: Tom Van Looy <tom$ctors,net>
  * License: http://ctors.net/isc_license.txt
+ *
+ * Set DIP switches PORTA and PORTB to OFF.
+ * This program makes it possible to dim 8 leds (array C) with
+ * buttons of array B for up and buttons of array A for down.
  */
 
-#define STEP 10 // value to go up/down
+#define STEP 10         // Value to go up/down
+#define DENDERCOUNT 500 // Anti-dender timeout counter
 
 void setup(void);
 
@@ -16,8 +21,8 @@ void setup(void);
  */
 void setup(void)
 {
-    DDRC = 0xFF;
-    PORTC = 0x00;
+    DDRC = 0xFF;  // LED array C is output
+    PORTC = 0x00; // Turn LEDs initially off
 }
 
 /**
@@ -25,160 +30,87 @@ void setup(void)
  */
 void main(void)
 {
-    unsigned char i = 0; // software PWM counter
-    unsigned char pwm[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-    unsigned char buttonUp = 0;
-    unsigned char buttonDown = 0;
-    unsigned long int lock = 0; // anti-dender lock
+    unsigned char pwmValues[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+    unsigned char ledPos = 0;        // Led position (loop counter)
+    unsigned char oldButtonUp = 0;   // LED position in pwmValues array for up action
+    unsigned char oldButtonDown = 0; // LED position in pwmValues array for down action
+    unsigned char buttonUp = 0;      // LED position in pwmValues array for up action
+    unsigned char buttonDown = 0;    // LED position in pwmValues array for down action
+    unsigned char pwm = 0;           // Software PWM counter
+    unsigned long int lock = 0;      // Anti-dender lock
     
     setup();
 
     while(1) {
-        buttonUp = PINA;
-        buttonDown = PINB;
-
-        // compare values of up/down button array
+        buttonDown = PINA; // Read button array A (down)
+        buttonUp = PINB;   // Read button array B (up)
+        
+        // Compare values of up/down button array
         switch (buttonUp) {
-            case 1:
-                buttonUp = 0;
-                break;
-            case 2:
-                buttonUp = 1;
-                break;
-            case 4:
-                buttonUp = 2;
-                break;
-            case 8:
-                buttonUp = 3;
-                break;
-            case 16:
-                buttonUp = 4;
-                break;
-            case 32:
-                buttonUp = 5;
-                break;
-            case 64:
-                buttonUp = 6;
-                break;
-            case 128:
-                buttonUp = 7;
-                break;
-            default:
-                buttonUp = 8; // disable
+            case 1:   buttonUp = 0; break;
+            case 2:   buttonUp = 1; break;
+            case 4:   buttonUp = 2; break;
+            case 8:   buttonUp = 3; break;
+            case 16:  buttonUp = 4; break;
+            case 32:  buttonUp = 5; break;
+            case 64:  buttonUp = 6; break;
+            case 128: buttonUp = 7; break;
+            default:  buttonUp = 8; // Not pressed / disable
         }
         switch (buttonDown) {
-            case 1:
-                buttonDown = 0;
-                break;
-            case 2:
-                buttonDown = 1;
-                break;
-            case 4:
-                buttonDown = 2;
-                break;
-            case 8:
-                buttonDown = 3;
-                break;
-            case 16:
-                buttonDown = 4;
-                break;
-            case 32:
-                buttonDown = 5;
-                break;
-            case 64:
-                buttonDown = 6;
-                break;
-            case 128:
-                buttonDown = 7;
-                break;
-            default:
-                buttonDown = 8; // disable
+            case 1:   buttonDown = 0; break;
+            case 2:   buttonDown = 1; break;
+            case 4:   buttonDown = 2; break;
+            case 8:   buttonDown = 3; break;
+            case 16:  buttonDown = 4; break;
+            case 32:  buttonDown = 5; break;
+            case 64:  buttonDown = 6; break;
+            case 128: buttonDown = 7; break;
+            default:  buttonDown = 8; // Not pressed / disable
         }
 
-// -- up -----------------------------------------------------------------------
-        if (buttonUp < 8 && lock == 0) {
-            lock = 1;
-            if (pwm[buttonUp] < (0xFF - STEP)) {
-                pwm[buttonUp] += STEP;
+        // If a button is pressed (and lock is off), change up/down values
+        if (lock == 0) {
+            if (buttonUp < 8) {
+                if (pwmValues[buttonUp] > STEP) {
+                    pwmValues[buttonUp] -= STEP;
+                } else {
+                    pwmValues[buttonUp] = 0;
+                }
+            }
+            if (buttonDown < 8) {
+                if (pwmValues[buttonDown] < (0xFF - STEP)) {
+                    pwmValues[buttonDown] += STEP;
+                } else {
+                    pwmValues[buttonDown] = 0xFF;
+                }
             }
         }
 
-// -- down ---------------------------------------------------------------------
-        if (buttonDown < 8 && lock == 0) {
-            lock = 1;
-            if (pwm[buttonDown] > STEP) {
-                pwm[buttonDown] -= STEP;
-            }
+        // Apply anti-dender lock when values change
+        if (oldButtonDown != buttonDown || oldButtonUp != buttonUp) {
+           lock = 1;
+           oldButtonDown = buttonDown;
+           oldButtonUp = buttonUp;
         }
-
-// -- locking ------------------------------------------------------------------
-        if (lock > 0 && lock < 500) {
+        // Anti-dender locking
+        if (lock > 0 && lock < DENDERCOUNT) {
             lock++;
         }
-        if (lock == 500 && buttonUp == 8 && buttonDown == 8) {
+        if (lock == DENDERCOUNT && buttonUp == 8 && buttonDown == 8) {
             lock = 0;
         }
 
-// -- LEDs ---------------------------------------------------------------------
-
-        // LED number 1
-        if (i > pwm[0]) {
-            PORTC |= 0b00000001; // turn on
-        }
-        else {
-            PORTC &= 0b11111110; // turn off
-        }
-        // LED number 2
-        if (i > pwm[1]) {
-            PORTC |= 0b00000010; // turn on
-        }
-        else {
-            PORTC &= 0b11111101; // turn off
-        }
-        // LED number 3
-        if (i > pwm[2]) {
-            PORTC |= 0b00000100; // turn on
-        }
-        else {
-            PORTC &= 0b11111011; // turn off
-        }
-        // LED number 4
-        if (i > pwm[3]) {
-            PORTC |= 0b00001000; // turn on
-        }
-        else {
-            PORTC &= 0b11110111; // turn off
-        }
-        // LED number 5
-        if (i > pwm[4]) {
-            PORTC |= 0b00010000; // turn on
-        }
-        else {
-            PORTC &= 0b11101111; // turn off
-        }
-        // LED number 6
-        if (i > pwm[5]) {
-            PORTC |= 0b00100000; // turn on
-        }
-        else {
-            PORTC &= 0b11011111; // turn off
-        }
-        // LED number 7
-        if (i > pwm[6]) {
-            PORTC |= 0b01000000; // turn on
-        }
-        else {
-            PORTC &= 0b10111111; // turn off
-        }
-        // LED number 8
-        if (i > pwm[7]) {
-            PORTC |= 0b10000000; // turn on
-        }
-        else {
-            PORTC &= 0b01111111; // turn off
+        // Set the LED's PWM duty cycle
+        for (ledPos = 0; ledPos < 8; ledPos++) {
+            if (pwm > pwmValues[ledPos]) {
+                PORTC |= (0b00000001 << ledPos);
+            } else {
+                PORTC &= ~(0b00000001 << ledPos);
+            }
         }
 
-        i++; // turns over automatically, 255 + 1 = 0
+        pwm++; // Turns over automatically, 255 + 1 = 0
     }
 }
 
