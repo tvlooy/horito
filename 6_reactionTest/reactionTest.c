@@ -14,10 +14,10 @@
  */
 
 volatile enum BOOLEAN { TRUE, FALSE }
-    _buttonPressed = FALSE,
-    _finished = FALSE,
-    _started = FALSE,
-    _cheater = FALSE;
+    _buttonPressed = FALSE, // The player pressed the button
+    _finished = FALSE,      // The game is finished
+    _started = FALSE,       // The game is started
+    _cheater = FALSE;       // The player pressed prematurely
 volatile int _milliseconds = 0;
 
 char GLCD_DataPort at PORTC;
@@ -48,7 +48,7 @@ void setup(void)
     EIMSK |= 0b00000001; // INT0 enable
     EICRA |= 0b00000011; // Trigger INT0 on rising edge
 
-    TCCR0 = 0b01100100;  // Timer/counter register
+    TCCR0 = 0b00111100;  // Timer/counter register
     OCR0 = 0x9B;         // Output compare
     TIMSK |= 0b00000010; // Interrupt on compare match
     
@@ -117,7 +117,7 @@ void main(void)
 
     while(1) {
         if (_cheater == TRUE && _finished == FALSE) {
-             PORTD = 0b01010101;
+             PORTD = 0b01010101; //
              Glcd_Fill(0x00);
              Glcd_Write_Text("                     ", 0, 0, 0);
              Glcd_Write_Text("***** KITTENS *******", 0, 1, 0);
@@ -146,7 +146,6 @@ void main(void)
                 _cheater = TRUE;
             } else {
                 PORTD = 0b00001111;
-                _milliseconds *= 1.6; // approach milliseconds
                 sprintf(text, "Your score: %d ms    ", _milliseconds);
                 Glcd_Write_Text("***** FINISHED ****** ",  0, 0, 0);
                 Glcd_Write_Text(text,  0, 1, 0);
