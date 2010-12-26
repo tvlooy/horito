@@ -32,10 +32,10 @@ void main(void)
 {
     unsigned char pwmValues[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
     unsigned char ledPos = 0;        // Led position (loop counter)
-    unsigned char oldButtonUp = 0;   // LED position in pwmValues array for up action
-    unsigned char oldButtonDown = 0; // LED position in pwmValues array for down action
     unsigned char buttonUp = 0;      // LED position in pwmValues array for up action
     unsigned char buttonDown = 0;    // LED position in pwmValues array for down action
+    unsigned char oldButtonUp = 0;   // Old buttonUp value
+    unsigned char oldButtonDown = 0; // Old buttonDown value
     unsigned char pwm = 0;           // Software PWM counter
     unsigned long int lock = 0;      // Anti-dender lock
     
