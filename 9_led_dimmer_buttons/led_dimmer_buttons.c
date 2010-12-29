@@ -111,7 +111,8 @@ void main(void)
             }
         }
 
-        pwm++; // Turns over automatically, 255 + 1 = 0
+        // Increase pwm counter and turnover at PWM_TOP
+        pwm++;
         if (pwm >= PWM_TOP) {
             pwm = 0;
         }
