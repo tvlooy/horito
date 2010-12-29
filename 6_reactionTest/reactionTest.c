@@ -103,10 +103,10 @@ void main(void)
     _buttonPressed = FALSE;
     _finished = FALSE;
     _started = TRUE;
-    PORTD = 0b11110000;
     
     // If user didn't cheat, flag start
     if (_cheater == FALSE) {
+        PORTD = 0b11110000;
         Glcd_Fill(0x00);
         Glcd_Write_Text("        o_________", 0, 1, 1);
         Glcd_Write_Text("       / /       /", 0, 2, 1);
@@ -119,7 +119,7 @@ void main(void)
 
     while(1) {
         // If user cheated, show a message and stop game.
-        // Start flickering the LED array
+        // Prepare LED array for flickering
         if (_cheater == TRUE && _finished == FALSE) {
             PORTD = 0b01010101;
             Glcd_Fill(0x00);
@@ -131,14 +131,10 @@ void main(void)
             Glcd_Write_Text("of the kittens!      ", 0, 6, 1);
             _finished = TRUE;
         }
-        if (_cheater == TRUE) {
-            Delay_ms(500);
-            PORTD = ~PORTD;
-        }
-
+        
         // If the user didn't press the button within 10 seconds, show a message
-        // and end the game. Start flickering the LED array
-        if (_buttonPressed == TRUE && _finished == FALSE && _started == TRUE) {
+        // and end the game. Prepare LED array for flickering
+        if (_buttonPressed == TRUE && _finished == FALSE) {
             Glcd_Fill(0x00);
             if (_milliseconds > 10000) {
                 PORTD = 0b01010101;
@@ -165,6 +161,12 @@ void main(void)
                 Glcd_Write_Text("  |    /_____\\       ", 0, 7, 1);
             }
             _finished = TRUE;
+        }
+
+        // When a cheat was detected, start flickering the LED array
+        if (_cheater == TRUE) {
+            Delay_ms(500);
+            PORTD = ~PORTD;
         }
     }
 }

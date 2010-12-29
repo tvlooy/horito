@@ -13,6 +13,7 @@
 
 #define STEP 10         // Value to go up/down
 #define DENDERCOUNT 500 // Anti-dender timeout counter
+#define PWM_TOP 100     // Maximum value of PWM counter (scale)
 
 void setup(void);
 
@@ -30,7 +31,7 @@ void setup(void)
  */
 void main(void)
 {
-    unsigned char pwmValues[8] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+    unsigned char pwmValues[8] = { 0x00 };
     unsigned char ledPos = 0;        // Led position (loop counter)
     unsigned char buttonUp = 0;      // LED position in pwmValues array for up action
     unsigned char buttonDown = 0;    // LED position in pwmValues array for down action
@@ -72,17 +73,17 @@ void main(void)
         // If a button is pressed (and lock is off), change up/down values
         if (lock == 0) {
             if (buttonUp < 8) {
-                if (pwmValues[buttonUp] > STEP) {
-                    pwmValues[buttonUp] -= STEP;
+                if (pwmValues[buttonUp] < (PWM_TOP - STEP)) {
+                    pwmValues[buttonUp] += STEP;
                 } else {
-                    pwmValues[buttonUp] = 0;
+                    pwmValues[buttonUp] = PWM_TOP;
                 }
             }
             if (buttonDown < 8) {
-                if (pwmValues[buttonDown] < (0xFF - STEP)) {
-                    pwmValues[buttonDown] += STEP;
+                if (pwmValues[buttonDown] > STEP) {
+                    pwmValues[buttonDown] -= STEP;
                 } else {
-                    pwmValues[buttonDown] = 0xFF;
+                    pwmValues[buttonDown] = 0;
                 }
             }
         }
@@ -103,7 +104,7 @@ void main(void)
 
         // Set the LED's PWM duty cycle
         for (ledPos = 0; ledPos < 8; ledPos++) {
-            if (pwm > pwmValues[ledPos]) {
+            if (pwm < pwmValues[ledPos]) {
                 PORTC |= (0b00000001 << ledPos);
             } else {
                 PORTC &= ~(0b00000001 << ledPos);
@@ -111,6 +112,9 @@ void main(void)
         }
 
         pwm++; // Turns over automatically, 255 + 1 = 0
+        if (pwm >= PWM_TOP) {
+            pwm = 0;
+        }
     }
 }
 
