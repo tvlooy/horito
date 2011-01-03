@@ -13,18 +13,39 @@
 #include <stdlib.h>
 #include <math.h>
 
-int main(void)
+int main(int argc, char** argv)
 {
     int charRow, pixRow, pixCol, charCol;
     unsigned int rgb;
     FILE *bitmap;
-    char dump[8][128] = {};
+    unsigned char dump[8][128];
+
+    // initialize data array
+    for (charRow = 0; charRow < 8; charRow++) {
+        for (pixCol = 0; pixCol < 128; pixCol++) {
+            dump[charRow][pixCol] = 0;
+        }
+    }
+
+    // Check input file and options
+    if (argc < 2) {
+        fprintf(stderr, "No file given!\n");
+        return 3;
+    }
+    if (argc < 3) {
+        fprintf(stderr, "No option (python, c) given!\n");
+        return 4;
+    }
+    if (strcmp(argv[2], "c") != 0 && strcmp(argv[2], "python") != 0) {
+        fprintf(stderr, "Wrong option given! Must be 'c' or 'python'.\n");
+        return 5;
+    }
 
     // open bitmap
-    bitmap = fopen("image.bmp", "r");
+    bitmap = fopen(argv[1], "r");
     if (bitmap == NULL) {
-        printf("File \"image.bmp\" could not be read!\n");
-        return (EXIT_FAILURE);
+        fprintf(stderr, "File \"%s\" could not be read!\n", argv[1]);
+        return 6;
     }
 
     // skip bitmap header
@@ -61,17 +82,27 @@ int main(void)
         rgb = getc(bitmap);
     }
 
-    // print results as C code, format code with breaks and spaces
-    printf("    const code char image[1024] = {");
-    for (charRow = 7; charRow >= 0; charRow--) {
-        for (pixCol = 0; pixCol < 128; pixCol++) {
-            if (pixCol % 14 == 0) {
-                printf("\n        ");
+    // Print output for python
+    if (strcmp(argv[2], "python") == 0) {
+        for (charRow = 7; charRow >= 0; charRow--) {
+            for (pixCol = 0; pixCol < 128; pixCol++) {
+                printf("%d, ", 255 - dump[charRow][pixCol]);
             }
-            printf("%d, ", 255 - dump[charRow][pixCol]);
         }
     }
-    printf("\n    };\n");
+    // print results as C code, format code with breaks and spaces
+    else if (strcmp(argv[2], "c") == 0) {
+        printf("    const code char image[1024] = {");
+        for (charRow = 7; charRow >= 0; charRow--) {
+            for (pixCol = 0; pixCol < 128; pixCol++) {
+                if (pixCol % 12 == 0) {
+                    printf("\n        ");
+                }
+                printf("0x%02x, ", 255 - dump[charRow][pixCol]);
+            }
+        }
+        printf("\n    };\n");
+    }
 
     return (EXIT_SUCCESS);
 }
