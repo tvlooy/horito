@@ -38,8 +38,8 @@ void setTemperature(void);
  */
 void setup(void)
 {
-    unsigned char myMacAddr[6] = { 0x00, 0x14, 0xA5, 0x76, 0x19, 0x3f };  // my MAC address
-    unsigned char myIpAddr[4]  = {  10,  55,  55, 31 };                   // my IP address
+    unsigned char macAddr[6]   = { 0x00, 0x14, 0xA5, 0x76, 0x19, 0x3f };  // my MAC address
+    unsigned char ipAddr[4]    = {  10,  55,  55, 31 };                   // my IP address
     unsigned char gwIpAddr[4]  = {  10,  55,  55,  1 };                   // gateway (router) IP address
     unsigned char ipMask[4]    = { 255, 255, 255,  0 };                   // network mask (for example : 255.255.255.0)
     unsigned char dnsIpAddr[4] = {  10,  55,  55,  1 };                   // DNS server IP address
@@ -47,7 +47,7 @@ void setup(void)
     SPI1_Init();
 
     // Set MAC address, IP address and start full-duplex (0x01)
-    SPI_Ethernet_Init(myMacAddr, myIpAddr, 0x01);
+    SPI_Ethernet_Init(macAddr, ipAddr, 0x01);
 
     // Configure networking
     SPI_Ethernet_confNetwork(ipMask, gwIpAddr, dnsIpAddr);
