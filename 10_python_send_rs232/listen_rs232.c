@@ -51,7 +51,11 @@ void setup(void)
     Glcd_Fill(0x00);              // Clear GLCD
 
     SREG_I_bit = 1;               // Global interrupts enable
-    UART1_Init(9600);             // UART 1 baudrate
+    UART1_Init_Advanced(          // UART 1
+        9600,                     // Baudrate
+        _UART_ODDPARITY,          // Odd parity
+        _UART_TWO_STOPBITS        // Two stop-bits
+    );
     UCSR0B = UCSR0B | 0b10000000; // Enable RX interrupt
 }
 
