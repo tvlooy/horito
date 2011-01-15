@@ -131,8 +131,8 @@ class Py2rs232:
             self.ser = serial.Serial(
                 port = '/dev/ttyUSB0',
                 baudrate = 9600,
-                parity = serial.PARITY_ODD,
-                stopbits = serial.STOPBITS_TWO,
+                parity = serial.PARITY_NONE,
+                stopbits = serial.STOPBITS_ONE,
                 bytesize = serial.EIGHTBITS
             )
 
