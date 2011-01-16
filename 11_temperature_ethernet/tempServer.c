@@ -92,9 +92,8 @@ void setTemperature(void)
     _temperature[2] = (temp_whole /  10) % 10 + 48; // Extract tens
     _temperature[3] =  temp_whole %  10       + 48; // Extract ones
 
-    // Extract temp_fraction and convert it to unsigned int
-    temp_fraction = temp_full & 0x000F;
-    temp_fraction *= 625;
+    // Extract temp_fraction, multiply for correct resolution
+    temp_fraction = (temp_full & 0xF) * 625;
 
     // Convert temp_fraction to characters
     _temperature[5] = (temp_fraction / 1000)      + 48; // Extract thousands
