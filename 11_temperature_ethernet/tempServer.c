@@ -25,7 +25,7 @@ sfr sbit SPI_Ethernet_CS_Direction  at DDB7_bit;
 /**
  * Variables
  */
-char temperature[] = "000.0000";
+char _temperature[] = "+000.0000";
 
 /**
  * Function prototypes
@@ -38,11 +38,13 @@ void setTemperature(void);
  */
 void setup(void)
 {
-    unsigned char macAddr[6]   = { 0x00, 0x14, 0xA5, 0x76, 0x19, 0x3f };  // my MAC address
-    unsigned char ipAddr[4]    = {  10,  55,  55, 31 };                   // my IP address
-    unsigned char gwIpAddr[4]  = {  10,  55,  55,  1 };                   // gateway (router) IP address
-    unsigned char ipMask[4]    = { 255, 255, 255,  0 };                   // network mask (for example : 255.255.255.0)
-    unsigned char dnsIpAddr[4] = {  10,  55,  55,  1 };                   // DNS server IP address
+    unsigned char macAddr[6]   = {                      // My MAC address
+        0x00, 0x14, 0xA5, 0x76, 0x19, 0x3f
+    };
+    unsigned char ipAddr[4]    = {  10,  55,  55, 31 }; // My IP address
+    unsigned char gwIpAddr[4]  = {  10,  55,  55,  1 }; // Gateway IP address
+    unsigned char ipMask[4]    = { 255, 255, 255,  0 }; // Network mask
+    unsigned char dnsIpAddr[4] = {  10,  55,  55,  1 }; // DNS server IP address
 
     SPI1_Init();
 
@@ -58,65 +60,51 @@ void setup(void)
  */
 void setTemperature(void)
 {
-    const unsigned short TEMP_RESOLUTION = 12;
-    const unsigned short RES_SHIFT = TEMP_RESOLUTION - 8;
+    unsigned int temp_full;
     char temp_whole;
-    unsigned int temp_fraction;
-    unsigned temp;
+    int temp_fraction;
 
     Ow_Reset(&PORTE, 7);       // Onewire reset signal
     Ow_Write(&PORTE, 7, 0xCC); // Issue command SKIP_ROM
     Ow_Write(&PORTE, 7, 0x44); // Issue command CONVERT_T
-//    Delay_us(120);
 
     Ow_Reset(&PORTE, 7);
     Ow_Write(&PORTE, 7, 0xCC); // Issue command SKIP_ROM
     Ow_Write(&PORTE, 7, 0xBE); // Issue command READ_SCRATCHPAD
-//    Delay_ms(400);
 
-    temp =  Ow_Read(&PORTE, 7);
-    temp = (Ow_Read(&PORTE, 7) << 8) + temp;
+    // Read 16 bits
+    temp_full =  Ow_Read(&PORTE, 7);
+    temp_full = (Ow_Read(&PORTE, 7) << 8) + temp_full;
 
-    // Check if temperature is negative
-    if (temp & 0x8000) {
-        temperature[0] = '-';
-        temp = ~temp + 1;
+    // Set sign if temperature negative and make positive
+    if (temp_full & 0x8000) {
+        _temperature[0] = '-';
+        temp_full = ~temp_full + 1; // Sign-extended two's complement format
+    } else {
+        _temperature[0] = '+';
     }
 
     // Extract temp_whole
-    temp_whole = temp >> RES_SHIFT ;
+    temp_whole = temp_full >> 4;
 
     // Convert temp_whole to characters
-    if (temp_whole / 100) {
-        temperature[0] = temp_whole / 100 + 48;
-    }
-    else {
-        temperature[0] = '0';
-    }
-
-    temperature[1] = (temp_whole / 10) % 10 + 48;     // Extract tens digit
-    temperature[2] =  temp_whole % 10       + 48;     // Extract ones digit
+    _temperature[1] = (temp_whole / 100) % 10 + 48; // Extract hundreds
+    _temperature[2] = (temp_whole /  10) % 10 + 48; // Extract tens
+    _temperature[3] =  temp_whole %  10       + 48; // Extract ones
 
     // Extract temp_fraction and convert it to unsigned int
-    temp_fraction  = temp << (4 - RES_SHIFT);
-    temp_fraction &= 0x000F;
+    temp_fraction = temp_full & 0x000F;
     temp_fraction *= 625;
 
     // Convert temp_fraction to characters
-    temperature[4] =  temp_fraction / 1000      + 48; // Extract thousands digit
-    temperature[5] = (temp_fraction / 100) % 10 + 48; // Extract hundreds digit
-    temperature[6] = (temp_fraction / 10) % 10  + 48; // Extract tens digit
-    temperature[7] =  temp_fraction % 10        + 48; // Extract ones digit
+    _temperature[5] = (temp_fraction / 1000)      + 48; // Extract thousands
+    _temperature[6] = (temp_fraction /  100) % 10 + 48; // Extract hundreds
+    _temperature[7] = (temp_fraction /   10) % 10 + 48; // Extract tens
+    _temperature[8] =  temp_fraction %   10       + 48; // Extract ones
 }
 
 /**
- * this function is called by the library
- * the user accesses to the HTTP request by successive calls to Spi_Ethernet_getByte()
- * the user puts data in the transmit buffer by successive calls to Spi_Ethernet_putByte()
- * the function must return the length in bytes of the HTTP reply, or 0 if nothing to transmit
- *
- * if you don't need to reply to HTTP requests,
- * just define this function with a return(0) as single statement
+ * TCP request handler routine
  */
 unsigned int SPI_Ethernet_UserTCP(
     unsigned char *remoteHost,
@@ -125,35 +113,35 @@ unsigned int SPI_Ethernet_UserTCP(
     unsigned int reqLength,
     TEthPktFlags *flags)
 {
-    const code unsigned char httpHeader[] = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n";
-    unsigned char httpMethod[] = "GET /";
-    unsigned char getRequest[15]; // HTTP request buffer
-
-    unsigned int len; // my reply length
+    const code unsigned char httpHeader[] =
+        "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n";
+    unsigned char httpMethodGet[] = "GET /";
+    unsigned char requestData[7]; // HTTP request buffer
+    unsigned int replyLength;
 
     // Only serve requests on port 80 (HTTP)
     if (localPort != 80) {
         return(0);
     }
 
-    // Get the first 10 bytes of the request
-    for(len = 0; len < 10; len++) {
-        getRequest[len] = SPI_Ethernet_getByte();
+    // Get the first 6 bytes of the request
+    for (replyLength = 0; replyLength < 6; replyLength++) {
+        requestData[replyLength] = SPI_Ethernet_getByte();
     }
-    getRequest[len] = '\0'; // Terminate string
+    requestData[replyLength] = '\0'; // Terminate string
 
     // Only servewith HTTP GET requests
     // method is in the first 5 bytes, compare these
-    if (memcmp(getRequest, httpMethod, 5)) {
+    if (memcmp(requestData, httpMethodGet, 5)) {
         return(0);
     }
 
-    len = 0;
+    replyLength = 0;
     // Return server API version
-    if (getRequest[5] == 'v') {
-        len =  SPI_Ethernet_putConstString(httpHeader); // output HTTP header
-        len += SPI_Ethernet_putConstString(
-            "{\"author\":\"Tom Van Looy <tom@ctors.net>\",\"version\":\"0.0.1\"}"
+    if (requestData[5] == 'v') {
+        replyLength =  SPI_Ethernet_putConstString(httpHeader); // Output header
+        replyLength += SPI_Ethernet_putConstString(
+            "{\"author\":\"Tom Van Looy <tom@ctors.net>\",\"version\":\"0.1\"}"
         );
     }
     // By default, send temperature (and maybe time from RTC over I2C)
@@ -161,23 +149,17 @@ unsigned int SPI_Ethernet_UserTCP(
         // If the request is ok, read and save temperature in dyna
         setTemperature();
     
-        len =  SPI_Ethernet_putConstString(httpHeader);
-        len += SPI_Ethernet_putConstString("{\"temperature\":\"");
-        len += SPI_Ethernet_putString(temperature);
-        len += SPI_Ethernet_putConstString("\"}");
+        replyLength =  SPI_Ethernet_putConstString(httpHeader);
+        replyLength += SPI_Ethernet_putConstString("{\"temperature\":\"");
+        replyLength += SPI_Ethernet_putString(_temperature);
+        replyLength += SPI_Ethernet_putConstString("\"}");
     }
 
-    return(len); // return the number of bytes to write to transmit
+    return(replyLength); // return the number of bytes to write to transmit
 }
 
 /**
- * this function is called by the library
- * the user accesses to the UDP request by successive calls to Spi_Ethernet_getByte()
- * the user puts data in the transmit buffer by successive calls to Spi_Ethernet_putByte()
- * the function must return the length in bytes of the UDP reply, or 0 if nothing to transmit
- *
- * if you don't need to reply to UDP requests,
- * just define this function with a return(0) as single statement
+ * UDP request handler routine
  */
 unsigned int SPI_Ethernet_UserUDP(
     unsigned char *remoteHost,
@@ -197,7 +179,7 @@ void main(void)
     setup();
 
     while(1) {
-        // Don't test for error codes, just keep processing incomping packets
+        // Process incoming packets as quick as possible
         SPI_Ethernet_doPacket();
     }
 }
