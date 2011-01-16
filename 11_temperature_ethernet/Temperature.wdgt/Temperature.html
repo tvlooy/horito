@@ -1,0 +1,39 @@
+<html>
+<head>
+<style>
+	body {
+		margin: 0;
+	}
+	.result {
+		font-family: arial;
+        font-size: 40px;
+		font-weight: bold;
+		color: white;
+		text-align: center;
+        padding-top: 70px;
+		width: 200px;
+        height: 130px;
+		background-image: url(Default.png);
+	}
+</style>
+<script type="text/javascript" src="jquery-1.4.4.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#result').click(function () {
+        $.getJSON('http://10.55.55.31', function(data) {
+            temperature = parseFloat(Math.round(data.temperature * 100) / 100);
+
+            $('#result').hide();
+            $('#result').html(temperature + '°C');
+            $('#result').fadeIn();
+        });
+    });
+    $('#result').click();
+});
+</script>
+</head>
+
+<body>
+    <div id="result" class="result">0.0 °C</div>
+</body>
+</html>

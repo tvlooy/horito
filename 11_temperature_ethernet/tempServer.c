@@ -125,7 +125,7 @@ unsigned int SPI_Ethernet_UserTCP(
     unsigned int reqLength,
     TEthPktFlags *flags)
 {
-    const code unsigned char httpHeader[] = "HTTP/1.1 200 OK\nContent-type: text/json\n\n";
+    const code unsigned char httpHeader[] = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n";
     unsigned char httpMethod[] = "GET /";
     unsigned char getRequest[15]; // HTTP request buffer
 
@@ -153,7 +153,7 @@ unsigned int SPI_Ethernet_UserTCP(
     if (getRequest[5] == 'v') {
         len =  SPI_Ethernet_putConstString(httpHeader); // output HTTP header
         len += SPI_Ethernet_putConstString(
-            "[{\"author\":\"Tom Van Looy <tom@ctors.net>\",\"version\":\"0.0.1\"}]"
+            "{\"author\":\"Tom Van Looy <tom@ctors.net>\",\"version\":\"0.0.1\"}"
         );
     }
     // By default, send temperature (and maybe time from RTC over I2C)
@@ -162,9 +162,9 @@ unsigned int SPI_Ethernet_UserTCP(
         setTemperature();
     
         len =  SPI_Ethernet_putConstString(httpHeader);
-        len += SPI_Ethernet_putConstString("[{\"temperature\":\"");
+        len += SPI_Ethernet_putConstString("{\"temperature\":\"");
         len += SPI_Ethernet_putString(temperature);
-        len += SPI_Ethernet_putConstString("\"}]");
+        len += SPI_Ethernet_putConstString("\"}");
     }
 
     return(len); // return the number of bytes to write to transmit
