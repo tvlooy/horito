@@ -1,5 +1,5 @@
 CC=avr-gcc
-CFLAGS=-g -Os -Wall -mcall-prologues -mmcu=atmega128
+CFLAGS=-g -Os -Wall -Werror -mcall-prologues -mmcu=atmega128
 OBJ2HEX=avr-objcopy 
 AVRPROG2=avrprog2
 TARGET=softwarePwm

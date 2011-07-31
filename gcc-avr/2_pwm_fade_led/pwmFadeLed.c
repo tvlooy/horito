@@ -14,7 +14,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-void main(void)
+int main(void)
 {
     /**
      * Timer/counter control register. The bits stand for:

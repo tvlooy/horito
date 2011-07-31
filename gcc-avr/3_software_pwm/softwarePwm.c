@@ -15,7 +15,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-void main() 
+int main() 
 {
     unsigned char i = 0;      // counter
     unsigned char pwm1 = 200; // short duty cycle

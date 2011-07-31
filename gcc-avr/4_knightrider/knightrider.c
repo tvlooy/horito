@@ -25,14 +25,14 @@ void setup(void);
  */
 void setup(void)
 {
-    DDRA = 0xFF;         // Set the LED array pins to output
-    PORTA = 0b00000010;  // LED 2 must initially be illuminated
+    DDRA = 0xFF;                  // Set the LED array pins to output
+    PORTA = 0b00000010;           // LED 2 must initially be illuminated
 
-    sei();               // Global interrupts enable
+    sei();                        // Global interrupts enable
 
-    TCCR0 = 0b00101101;  // Timer/counter register
-    OCR0 = 0x250;        // Output compare
-    TIMSK |= 0b00000010; // Interrupt on compare match
+    TCCR0 = 0b00101101;           // Timer/counter register
+    OCR0 = (unsigned char) 0x250; // Output compare
+    TIMSK |= 0b00000010;          // Interrupt on compare match
 }
 
 /**
