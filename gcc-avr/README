@@ -4,3 +4,34 @@ programming hardware. These guys rock, because that programmer is on my AVR
 let me use the board on my favorite operating system, but it also means I
 don't need a license key for the mikroC IDE to develop > 2Kb hex file
 programs. See http://avrprog2.sourceforge.net/
+
+Installing avrprog2 and gcc-avr to make the examples work.
+(Ubuntu 16.04 instructions)
+
+tar xzvf avrprog2-1.4.1.tar.gz
+cd avrprog2-1.4.1
+
+cd build-aux/
+rm *
+ln -s /usr/share/automake-1.15/install-sh install-sh
+ln -s /usr/share/automake-1.15/missing missing
+ln -s /usr/share/automake-1.15/depcomp depcomp
+cd ..
+
+sudo apt-get install -y \
+    doxygen \
+    libusb-1.0.0 \
+    libbfd-dev \
+    libboost-filesystem-dev
+
+./configure
+make
+sudo make install
+
+sudo apt-get install -y \
+    gcc-avr \
+    binutils-avr \
+    gdb-avr \
+    avr-libc \
+    avrdude
+
